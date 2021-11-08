@@ -1,3 +1,10 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Stopwatch</string>
+    <string name="default_time">00:00:00.000</string>
+    <string name="start1" tools:ignore="Typos">start1</string>
+    <string name="pause1" tools:ignore="Typos">pause1</string>
+    <string name="stop1" tools:ignore="Typos">stop1</string>
+    <string name="start2">start2</string>
+    <string name="pause2">pause2</string>
+    <string name="stop2">stop2</string>
 </resources>
