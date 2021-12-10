@@ -11,9 +11,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.posse.android.stopwatch.ui.view.MainActivity
 import com.posse.android.stopwatch.ui.viewModel.StopwatchListOrchestrator
 import junit.framework.TestCase
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -26,9 +27,11 @@ class StopwatchActivityTest {
     private lateinit var scenario: ActivityScenario<MainActivity>
     private lateinit var context: Context
 
+    @ExperimentalCoroutinesApi
     @Before
     fun setup() {
         scenario = ActivityScenario.launch(MainActivity::class.java)
+        Dispatchers.setMain(TestCoroutineDispatcher())
         context = ApplicationProvider.getApplicationContext()
     }
 
@@ -86,17 +89,18 @@ class StopwatchActivityTest {
             val start1Button = it.findViewById<Button>(R.id.startButton)
             val watch1Text = it.findViewById<TextView>(R.id.watchText)
             runBlocking {
-                launch {
-                    start1Button.performClick()
-                }
+                start1Button.performClick()
                 delay(500)
-                TestCase.assertNotSame(StopwatchListOrchestrator.DEFAULT_TIME, watch1Text.text)
             }
+            TestCase.assertNotSame(StopwatchListOrchestrator.DEFAULT_TIME, watch1Text.text)
+            // тут не работает, потому что обновление поля во время подписки происходит только 1 раз
         }
     }
 
+    @ExperimentalCoroutinesApi
     @After
     fun close() {
         scenario.close()
+        Dispatchers.resetMain()
     }
 }
