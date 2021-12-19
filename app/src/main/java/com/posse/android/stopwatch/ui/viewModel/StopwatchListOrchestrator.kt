@@ -1,5 +1,6 @@
 package com.posse.android.stopwatch.ui.viewModel
 
+import com.posse.android.stopwatch.idlingResource.TestIdlingResource
 import com.posse.android.stopwatch.interator.Interator
 import com.posse.android.stopwatch.model.TIMER
 import kotlinx.coroutines.*
@@ -20,7 +21,14 @@ class StopwatchListOrchestrator(
 
     override val ticker2: StateFlow<String> = mutableTicker2
 
-    override fun start(timer: TIMER) {
+    override fun start(timer: TIMER, idlingResource: TestIdlingResource?) {
+        idlingResource?.setIdleState(false)
+        scope.launch {
+            delay(2_000)
+            tickerJob?.cancel()
+            ticker2Job?.cancel()
+            idlingResource?.setIdleState(true)
+        }
         when (timer) {
             TIMER.First -> {
                 if (tickerJob == null) startJob(timer)
