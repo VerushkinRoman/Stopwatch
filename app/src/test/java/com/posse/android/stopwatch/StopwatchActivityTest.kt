@@ -1,38 +1,34 @@
 package com.posse.android.stopwatch
 
-import android.content.Context
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.lifecycle.Lifecycle
 import androidx.test.core.app.ActivityScenario
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.posse.android.stopwatch.ui.view.MainActivity
 import com.posse.android.stopwatch.ui.viewModel.StopwatchListOrchestrator
 import junit.framework.TestCase
-import kotlinx.coroutines.*
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.resetMain
-import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import org.junit.After
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-
+@ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class StopwatchActivityTest {
 
-    private lateinit var scenario: ActivityScenario<MainActivity>
-    private lateinit var context: Context
+    @get:Rule
+    var testCoroutineRule = TestCoroutineRule()
 
-    @ExperimentalCoroutinesApi
+    private lateinit var scenario: ActivityScenario<MainActivity>
+
     @Before
     fun setup() {
         scenario = ActivityScenario.launch(MainActivity::class.java)
-        Dispatchers.setMain(TestCoroutineDispatcher())
-        context = ApplicationProvider.getApplicationContext()
     }
 
     @Test
@@ -86,21 +82,18 @@ class StopwatchActivityTest {
     @Test
     fun activityButtonStart_IsWorking() {
         scenario.onActivity {
-            val start1Button = it.findViewById<Button>(R.id.startButton)
-            val watch1Text = it.findViewById<TextView>(R.id.watchText)
-            runBlocking {
+            testCoroutineRule.runBlockingTest {
+                val start1Button = it.findViewById<Button>(R.id.startButton)
+                val watch1Text = it.findViewById<TextView>(R.id.watchText)
                 start1Button.performClick()
                 delay(500)
+                TestCase.assertNotSame(StopwatchListOrchestrator.DEFAULT_TIME, watch1Text.text)
             }
-            TestCase.assertNotSame(StopwatchListOrchestrator.DEFAULT_TIME, watch1Text.text)
-            // тут не работает, потому что обновление поля во время подписки происходит только 1 раз
         }
     }
 
-    @ExperimentalCoroutinesApi
     @After
     fun close() {
         scenario.close()
-        Dispatchers.resetMain()
     }
 }
